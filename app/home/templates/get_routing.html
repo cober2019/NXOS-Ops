@@ -1,0 +1,119 @@
+
+{% extends 'layouts/base.html' %}
+
+{% block title %} NXOS Viewer {% endblock title %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card">
+      <div class="card-header border-0">
+        <div class="row align-items-center">
+          <div class="col ">
+            <h3 class="mb-0">Routing Table</h3>
+          </div>
+        </div>
+      </div>
+      <div class="table-responsive">
+          <span class="counter pull-right"></span>
+        <table class="table align-items-center table-striped"  id="routing">
+          <thead class="thead-light">
+            <tr>
+              <th scope="col" class="text-center">VDC</th>
+              <th scope="col" class="text-center">VRF</th>
+              <th scope="col" class="text-center">Prefix</th>
+              <th scope="col" class="text-center">Protocol</th>
+              <th scope="col" class="text-center">AD</th>
+              <th scope="col" class="text-center">Next-Hop(s)</th>
+              <th scope="col" class="text-center">Out-Interface</th>
+              <th scope="col" class="text-center">Metric</th>
+              <th scope="col" class="text-center">Tag</th>
+              <th scope="col" class="text-center">Get Details</th>
+            </tr>
+          </thead>
+          <tbody id="routeTable">
+          {% for i in route_table %}
+            <tr style="height:1px">
+              <th scope="row" class="text-center">
+                {{ i[0] }}
+              </th>
+              <th scope="row" class="text-center">
+                {{ i[1] }}
+              </th>
+              <th scope="row" class="text-center">
+                {{ i[2] }}
+              </th>
+              <th scope="row" class="text-center">
+                {{ i[3] }}
+              </th>
+              <th scope="row" class="text-center">
+                {{ i[4] }}
+              </th>
+              <th scope="row" class="text-center">
+                {{ i[5] }}
+              </th>
+              <th scope="row" class="text-center">
+                {{ i[6] }}
+              </th>
+              <th scope="row" class="text-center">
+                {{ i[7] }}
+              </th>
+              <th scope="row" class="text-center">
+                {{ i[8] }}
+              </th>
+            </tr>
+          {%endfor%}
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+  function getRouting(val){
+  document.getElementById('getRoutes').value  = 'Getting Routes...';
+     $.ajax({
+      url: '/route_details',
+      type: 'POST',
+      data: {'details': val},
+      success: function(response) {
+          var wind_two = window.open("", "popupWindow", "width=700,height=800,scrollbars=yes");
+            wind_two.document.write(response);
+            document.getElementById('getRoutes').value  = 'Refresh Routes';
+      },
+     });
+    }
+
+</script>
+
+<script>
+
+  function getRouting(){
+  document.getElementById('getRoutes').value  = 'Getting Routes...';
+     $.ajax({
+      url: '/routing',
+      type: 'POST',
+      data: {'action': 'routes'},
+      success: function(response) {
+      document.getElementById('getRoutes').value  = 'Refresh Routes';
+          $("#routeTable").DataTable().destroy()
+          $('#routeTable').html(response.data);
+          $('#routeTable').DataTable({"pagingType": "full_numbers"});
+      },
+     });
+    }
+
+</script>
+
+ {% endblock content %}
+
+{% block javascripts %}
+
+
+{% endblock javascripts %}

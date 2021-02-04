@@ -1,0 +1,125 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} IOS-XE Viewer {% endblock title %}
+
+{% block stylesheets %}
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card">
+      <div class="card-header border-0">
+        <div class="row align-items-center">
+          <div class="col ">
+            <h3 class="mb-0 mb-0 text-center">BGP Configuration</h3>
+            <br/>
+          </div>
+        </div>
+        <form id="bgpForm" method="post">
+          <div class="form-group">
+            {% if local_as != 'No_AS'%}
+              <label class="font-weight-bold">Local AS</label>
+              <input class="form-control" placeholder="AS" name="localAs">
+            {% else %}
+             <label class="font-weight-bold">Local AS</label>
+             <input  class="form-control" placeholder="AS" name="localAs">
+            {% endif %}
+          </div>
+          <div class="form-group">
+            <label class="font-weight-bold">Remote Neighbor</label>
+            {% if neighbor %}
+              <input value="{{ neighbor }}" class="form-control" placeholder="Neighbor" name="neighborId" readonly="readonly">
+            {% else%}
+              <input type="text" class="form-control" placeholder="Neighbor" name="neighborId">
+            {% endif %}
+          </div>
+          <div class="form-group">
+            <label class="font-weight-bold">Remote AS</label>
+            <input type="text" class="form-control" placeholder="AS" name="remoteAs">
+          </div>
+          <div class="form-group">
+            <label class="font-weight-bold">Policy</label>
+            <div class="input-group mb-3">
+              <select class="custom-select" id="policy" name="policy">
+                <option value="None">None</option>
+                {% for k, v in prefixes.items() %}
+                  <option value="{{ k }} prefix-list">{{ k }} (prefix-list)</option>>
+                {% endfor %}
+                {% for k, v in route_map.items() %}
+                  <option value="{{ k }} route-map">{{ k }} (route-map)</option>>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="font-weight-bold">Policy Direction</label>
+            <div class="input-group mb-3">
+              <select class="custom-select" id="direction" name="direction">
+                <option value="None">None</option>
+                <option value="in">In</option>
+                <option value="out">Out</option>>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="font-weight-bold">Soft Reconfiguration</label>
+            <div class="input-group mb-3">
+              <select class="custom-select" id="softReconfig" name="softReconfig">
+                <option value="no">no</option>
+                <option value="yes">yes</option>>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="font-weight-bold">Next-Hop-Self</label>
+            <div class="input-group mb-3">
+              <select class="custom-select" id="nextHop" name="nextHop">
+                <option value="no">no</option>
+                <option value="yes">yes</option>>
+              </select>
+            </div>
+          </div>
+          <br/>
+          <input value="Build Adjacency" type="submit" class="btn btn-primary" id="buildAdj">
+        </form>
+        <br/>
+        <br/>
+        <div id='response'></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+  $(document).ready(function(){
+    $('#bgpForm').submit(function(){
+    document.getElementById('buildAdj').value  = 'Building Adjacency...';
+     $.ajax({
+      url: '/add_bgp_neighbor',
+      type: 'POST',
+      data: $('form').serialize(),
+      success: function(response){
+      document.getElementById('buildAdj').value  = 'Build Adjacency';
+       $('#response').html(response.data);
+      },
+     });
+     return false;
+    });
+  });
+
+</script>
+
+ {% endblock content %}
+
+{% block javascripts %}
+
+
+{% endblock javascripts %}

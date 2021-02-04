@@ -1,0 +1,122 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} IOS-XE Viewer {% endblock title %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="row">
+  <div class="col-xl-6">
+    <div class="row">
+      <div class="col">
+        <div class="card">
+          <div class="card-header border-0">
+            <div class="row align-items-center">
+              <div class="col">
+                <h3 class="mb-0" style="text-align:left">Interfaces
+                  <span><input value="Refresh" name="mac" class="btn btn-dark btn-round-xs float-right" role="status" type="button" onclick="refreshArp(this.name)" id="arpRefresh"></span>
+                </h3>
+              </div>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table id="arpMac" class="table align-items-center table-striped">
+              <thead class="thead-light">
+                <tr>
+                  <th scope="col" style="text-align:center">Interfaces</th>
+                  <th scope="col" style="text-align:center">Access</th>
+                  <th scope="col" style="text-align:center">Status</th>
+                  <th scope="col" style="text-align:center">Duplex</th>
+                  <th scope="col" style="text-align:center">Speed</th>
+                  <th scope="col" style="text-align:center">Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for i in access_interfaces %}
+                  <tr>
+                    <td scope="row" style="text-align:center">{{ i['interface'] }}</td>
+                    <td scope="row" style="text-align:center">{{ i['vlan'] }}</td>
+                    {% if i['status'] == 'connected' %}
+                      <td style="text-align:center">
+                        <i class="fas fa-circle text-green mr-3"></i>
+                      </td>
+                    {% else %}
+                      <td style="text-align:center">
+                        <i class="fas fa-circle text-red mr-3"></i>
+                      </td>
+                    {% endif %}
+                    <td scope="row" style="text-align:center">{{ i['duplex'] }}</td>
+                    <td scope="row" style="text-align:center">{{ i['speed'] }}</td>
+                    <td scope="row" style="text-align:center">{{ i['type'] }}</td>
+                  </tr>
+                {% endfor %}
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-6">
+    <div class="card">
+      <div class="card-header border-0">
+        <div class="row align-items-center">
+          <div class="col ">
+            <h3 class="mb-0 mb-0 text-center">All New L2</h3>
+            <br/>
+          </div>
+        </div>
+        <form id="completeeForm" method="post" action="{{ url_for('base_blueprint.submit_complete') }}">
+          <div class="form-group">
+              <label class="font-weight-bold ">Vlan</label>
+             <input class="form-control" placeholder="ID: 1-4095" name="vlanId">
+          </div>
+           <div class="form-group">
+            <label class="font-weight-bold">Description</label>
+            <input class="form-control" placeholder="Description" name="vlanDescription" >
+          </div>
+            <div class="form-group">
+            <label class="font-weight-bold">Name</label>
+            <input class="form-control" placeholder="Vlan Name" name="vlanName" >
+          </div>
+          <div class="form-group">
+            <label class="font-weight-bold">Trunk</label>
+            <div class="input-group mb-3">
+              <select class="custom-select" id="interface" name="trunkInterface">
+                  <option selected>Choose...</option>
+                {% for k, v in trunks.items() %}
+                  <option value="{{ k }}">{{ k }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="font-weight-bold">Interface</label>
+            <div class="input-group mb-3">
+              <select class="custom-select" id="interface" name="accessInterface">
+                  <option selected>Choose...</option>
+                {% for i in access_interfaces %}
+                  <option value="{{ i['interface'] }}">{{ i['interface'] }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <br/>
+          <input value="Submit" type="submit" class="btn btn-primary" id="modifyInt">
+          <br/>
+          <br/>
+        </form>
+        <div id='response'></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+ {% endblock content %}
+
+{% block javascripts %}
+
+
+{% endblock javascripts %}

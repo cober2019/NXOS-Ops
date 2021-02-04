@@ -1,0 +1,68 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} IOS-XE Viewer {% endblock title %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card">
+      <div class="card-header border-0">
+        <div class="row align-items-center">
+          <div class="col ">
+            <h3 class="mb-0 mb-0 text-center">New Vlan</h3>
+            <br/>
+          </div>
+        </div>
+        <form id="vlaneForm" method="post" action="{{ url_for('base_blueprint.submit_vlan') }}">
+          <div class="form-group">
+            <label class="font-weight-bold ">Vlan:</label>
+                <input class="form-control" placeholder="1-4095" name="vlanId">
+          </div>
+           <div class="form-group">
+            <label class="font-weight-bold">Name</label>
+            <input class="form-control" placeholder="Name" name="vlanName" >
+          </div>
+          <div class="form-group">
+            <label class="font-weight-bold">Description</label>
+             <input type="text" class="form-control" placeholder="Description" name="vlanDescription">
+          </div>
+          <br/>
+          <input value="Submit" type="submit" class="btn btn-primary" id="addVlan">
+          <br/>
+          <br/>
+        </form>
+        <div id='response'></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+  $(document).ready(function(){
+    $('#vlanForm').submit(function(){
+     $.ajax({
+      url: '/new_int_form',
+      type: 'POST',
+      data: $('form').serialize(),
+      success: function(response){
+       $('#response').html(response.data);
+      },
+     });
+     return false;
+    });
+  });
+
+</script>
+
+ {% endblock content %}
+
+{% block javascripts %}
+
+
+{% endblock javascripts %}

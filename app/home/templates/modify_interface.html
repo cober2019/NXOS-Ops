@@ -1,0 +1,69 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} IOS-XE Viewer {% endblock title %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card">
+      <div class="card-header border-0">
+        <div class="row align-items-center">
+          <div class="col ">
+            <h3 class="mb-0 mb-0 text-center">Interface Configuration</h3>
+            <br/>
+          </div>
+        </div>
+        <form id="interfaceForm" method="post" action="{{ url_for('base_blueprint.submit_vlan') }}">
+           <div class="form-group">
+               {% if interface == mgmt_int  %}
+                   <label class="font-weight-bold ">Interface
+                       <span class="badge badge-pill badge-warning">Warning: Connection Currently Using This Interface</span></label>
+                   <input value="{{ interface }}" class="form-control " placeholder="{{ interface }}" name="interface">
+               {% else%}
+                   <label class="font-weight-bold">Interface</label>
+                   <input value="{{ interface }}" class="form-control" placeholder="{{ interface }}" name="interface">
+               {% endif %}
+          </div>
+          <div class="form-group">
+            <label class="font-weight-bold">Admin Status</label>
+            <div class="input-group mb-3">
+              <select class="custom-select" id="status" name="status">
+                <option value="up">Up</option>
+                <option value="down">Down</option>>
+                <option value="no shutdown">No Shutdown</option>
+              </select>
+            </div>
+          </div>
+           <div class="form-group">
+            <label class="font-weight-bold">Vlan</label>
+            <div class="input-group mb-3">
+              <select class="custom-select" id="vlan" name="vlanId">
+                  <option selected>Choose...</option>
+                {% for i in vlans %}
+                  <option value="{{ i['id'] }}">{{ i['id'] }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <br/>
+          <input value="Submit" type="submit" class="btn btn-dark" id="modifyInt">
+          <br/>
+          <br/>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+ {% endblock content %}
+
+{% block javascripts %}
+
+
+{% endblock javascripts %}

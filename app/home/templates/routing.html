@@ -1,0 +1,521 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} IOS-XE Viewer {% endblock title %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card">
+      <div class="card-header border-0">
+        <div class="row align-items-center">
+          <div class="col ">
+            <h3 class="mb-0">Interfaces
+              <span><a href="{{ url_for('base_blueprint.new_interface') }}"><input value="Add Interface" name="addInterface" class="btn btn-dark btn-round-xs float-right" role="status" type="button" style="margin-left: 15px"></a></span>
+              </h3>
+          </div>
+        </div>
+      </div>
+        <div class="table-responsive">
+          <span class="counter pull-right"></span>
+          <table class="table align-items-center table-striped" id="intTable">
+            <thead class="thead-light">
+              <tr>
+                <th scope="col" class="text-center">Interface</th>
+                <th scope="col" class="text-center">IP/MAC</th>
+                <th scope="col" class="text-center">Admin</th>
+                <th scope="col" class="text-center">Operational</th>
+                <th scope="col" class="text-center">Speed</th>
+                <th scope="col" class="text-center">Last Change</th>
+                <th scope="col" class="text-center">InOctets</th>
+                <th scope="col" class="text-center">OutOctets</th>
+                <th scope="col" class="text-left">Available Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for i in interfaces %}
+              {% for k, v in i.items() %}
+                <tr style="height:1px">
+                  <th scope="row" class="text-center">
+                    {{ k }}
+                  </th>
+                  <th scope="row" class="text-center">
+                    {{ v['IP'] }}
+                    <br>
+                    {{ v['MAC'] }}
+                  </th>
+                  {% if v['Admin'] == 'down' %}
+                    <td scope="row" style="text-align:center">
+                      <i class="fas fa-circle text-red mr-3"></i>
+                    </td>
+                  {% else %}
+                    <td scope="row" style="text-align:center">
+                      <i class="fas fa-circle text-green mr-3"></i>
+                    </td>
+                  {% endif %}
+
+                  {% if v['Operational'] == 'down' %}
+                    <td scope="row" style="text-align:center">
+                      <i class="fas fa-circle text-red mr-3"></i>
+                    </td>
+                  {% else %}
+                    <td scope="row" style="text-align:center">
+                      <i class="fas fa-circle text-green mr-3"></i>
+                    </td>
+                  {% endif %}
+
+                  <th scope="row" class="text-center">
+                    {{ v['Speed'] }}
+                  </th>
+                  <th scope="row" class="text-center">
+                    {{ v['Last Change'].split('.')[0] }}
+                  </th>
+                  <th scope="row" class="text-center">
+                    {{ v['In Octets'] }}
+                  </th>
+                   <th scope="row" class="text-center">
+                    {{ v['Out Octets'] }}
+                  </th>
+                  <th scope="row" class="text-left">
+                    <a href="{{ url_for('base_blueprint.modify_inteface', interface=k.replace('/', '%2f')) }}"><input value="Modify" name=" {{ k }}" style="font-size:11px" class="btn btn-link" role="status" type="button" ></a>
+                    <br>
+                    <input style="font-size:11px"  value="Clear Counters" name="{{ k }}" class="btn btn-link" role="status" type="button" onclick="clearCounters(this.name)" id="{{ k }}">
+                    <br>
+                    <input style="font-size:11px" value="Interface Details" name="{{ k }}" class="btn btn-link" role="status" type="button" onclick="moreIntDetails(this.name)" id="{{ k }}">
+                    <br>
+                    <a href="{{ url_for('base_blueprint.ping', source=k.replace('/', '%2f')) }}"><input value="Source Ping" name=" {{ k }}" style="font-size:11px" class="btn btn-link" role="status" type="button" ></a>
+                  </th>
+                </tr>
+              {%endfor%}
+            {%endfor%}
+          </table>
+        </div>
+      </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card">
+      <div class="card-header border-0">
+        <div class="row align-items-center">
+          <div class="col ">
+            <h3 class="mb-0"><span>ARP Table</span>
+               <span ><input value="Clear ARP" name="arp" class="btn btn-dark btn-round-xs float-right" role="status" type="button" onclick="clearArp(this.name)" id="clearArp"></span>
+            </h3>
+          </div>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table  class="table align-items-center table-striped" id="arpTable">
+          <thead class="thead-light">
+            <tr>
+              <th scope="col" class="text-center">Protocol</th>
+              <th scope="col" class="text-center">Address</th>
+              <th scope="col" class="text-center">Age</th>
+              <th scope="col" class="text-center">MAC</th>
+              <th scope="col" class="text-center">Type</th>
+              <th scope="col" class="text-center">Interfaces</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for i in arp %}
+            <tr style="height:1px">
+              <th scope="row" class="text-center">
+                {{ i['Protocol'] }}
+              </th>
+              <th scope="row" class="text-center">
+                {{ i['Address'] }}
+              </th>
+              <th scope="row" class="text-center">
+                {{ i['Age'] }}
+              </th>
+              <th scope="row" class="text-center">
+                {{ i['MAC'] }}
+              </th>
+              <th scope="row" class="text-center">
+                {{ i['Type'] }}
+              </th>
+              <th scope="row" class="text-center">
+                {{ i['Interfaces'] }}
+              </th>
+            </tr>
+          {%endfor%}
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% if bgp and ospf %}
+<div class="row">
+  <div class="col-xl-6">
+    <div class="card">
+      <div class="card-header border-0">
+        <div class="row align-items-center">
+          <div class="col ">
+            <h3 class="mb-0"><span>BGP Neighbor Status</span>
+              <span><input value="Refresh" name="bgp" class="btn btn-dark btn-round-xs float-right" role="status" type="button" onclick="refreshBgp(this.name)" id="bgpRefresh"></span>
+            </h3>
+          </div>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <span class="counter pull-right"></span>
+        <table class="table align-items-center table-striped" id="bgpNeighbors">
+          <thead class="thead-light">
+            <tr>
+              <th scope="col" class="text-center">Neighbor</th>
+              <th scope="col" class="text-center">AS</th>
+              <th scope="col" class="text-center">Uptime</th>
+              <th scope="col" class="text-center">Prefixes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for k, v in bgp.items() %}
+              {% for i in v %}
+                <tr style="height:1px">
+                  <th scope="row" class="text-center">
+                    {{ i['Neighbor'] }}
+                  </th>
+                  <th scope="row" class="text-center">
+                    {{ i['AS'] }}
+                  </th>
+                  <th scope="row" class="text-center">
+                    {{ i['Uptime'] }}
+                  </th>
+                  <th scope="row" class="text-center">
+                    {{ i['Prefixes'] }}
+                  </th>
+                </tr>
+            {%endfor%}
+          {%endfor%}
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-6">
+    <div class="card">
+        <div class="card-header border-0">
+          <div class="row align-items-center">
+            <div class="col ">
+              <h3 class="mb-0"><span>OSPF Neighbor Status</span>
+              <span><a href="{{ url_for('base_blueprint.add_ospf_neighbors') }}"><input value="Add Neighbor" name="bgp" class="btn btn-dark btn-round-xs float-right" role="status" type="button" style="margin-left: 15px"></a></span>
+              <span><input value="Refresh" name="ospf" class="btn btn-dark btn-round-xs float-right" role="status" type="button" onclick="refreshOspf(this.name)" id="ospfRefresh"></span>
+              </h3>
+            </div>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <span class="counter pull-right"></span>
+          <table class="table align-items-center table-striped" id="ospfTable">
+            <thead class="thead-light">
+              <tr>
+                <th scope="col" class="text-center">Neighbor ID</th>
+                <th scope="col" class="text-center">State</th>
+                <th scope="col" class="text-center">Address</th>
+                <th scope="col" class="text-center">Interface</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for k, v in ospf.items() %}
+                {% for i in v %}
+                  <tr style="height:1px">
+                    <th scope="row" class="text-center">
+                      {{ i['NeighborID'] }}
+                    </th>
+                    <th scope="row" class="text-center">
+                      {{ i['State'] }}
+                    </th>
+                    <th scope="row" class="text-center">
+                      {{ i['Address'] }}
+                    </th>
+                    <th scope="row" class="text-center">
+                      {{ i['Interface'] }}
+                    </th>
+                  </tr>
+              {%endfor%}
+            {%endfor%}
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+{% elif bgp %}
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card">
+      <div class="card-header border-0">
+        <div class="row align-items-center">
+          <div class="col">
+             <h4 class="mb-0"><span>BGP Neighbor Status</span>
+               <span><input value="Refresh" name="bgp" class="btn btn-dark btn-round-xs float-right" role="status" type="button" onclick="refreshBgpOnly(this.name)" id="bgpRefreshOnly"></span>
+             </h4>
+          </div>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <span class="counter pull-right"></span>
+        <table class="table align-items-center table-striped" id="bgpNeighborsOnly">
+          <thead class="thead-light">
+            <tr>
+              <th scope="col" class="text-center">Neighbor</th>
+              <th scope="col" class="text-center">AS</th>
+              <th scope="col" class="text-center">Uptime</th>
+              <th scope="col" class="text-center">Prefixes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for k, v in bgp.items() %}
+              {% for i in v %}
+                <tr style="height:1px">
+                  <th scope="row" class="text-center">
+                    {{ i['Neighbor'] }}
+                  </th>
+                  <th scope="row" class="text-center">
+                    {{ i['AS'] }}
+                  </th>
+                  <th scope="row" class="text-center">
+                    {{ i['Uptime'] }}
+                  </th>
+                  <th scope="row" class="text-center">
+                    {{ i['Prefixes'] }}
+                  </th>
+                </tr>
+            {%endfor%}
+          {%endfor%}
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% elif ospf %}
+<div class="row">
+  <div class="col-xl-12">
+    <div class="card">
+      <div class="card-header border-0">
+        <div class="row align-items-center">
+          <div class="col ">
+            <h3 class="mb-0"><span>OSPF Neighbor Status</span>
+              <span><a href="{{ url_for('base_blueprint.add_ospf_neighbors') }}"><input value="Add Neighbor" name="bgp" class="btn btn-dark btn-round-xs float-right" role="status" type="button" style="margin-left: 15px"></a></span>
+              <span><input value="Refresh" name="ospf" class="btn btn-dark btn-round-xs float-right" role="status" type="button" onclick="refreshOspfOnly(this.name)" id="ospfRefreshOnly"></span>
+            </h3>
+          </div>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <span class="counter pull-right"></span>
+        <table class="table align-items-center table-striped" id="ospfTableOnly">
+          <thead class="thead-light">
+            <tr>
+              <th scope="col" class="text-center">Neighbor ID</th>
+              <th scope="col" class="text-center">State</th>
+              <th scope="col" class="text-center">Address</th>
+              <th scope="col" class="text-center">Interface</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for k, v in ospf.items() %}
+              {% for i in v %}
+                <tr style="height:1px">
+                  <th scope="row" class="text-center">
+                    {{ i['NeighborID'] }}
+                  </th>
+                  <th scope="row" class="text-center">
+                    {{ i['State'] }}
+                  </th>
+                  <th scope="row" class="text-center">
+                    {{ i['Address'] }}
+                  </th>
+                  <th scope="row" class="text-center">
+                    {{ i['Interface'] }}
+                  </th>
+                </tr>
+            {%endfor%}
+          {%endfor%}
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{%endif%}
+
+<script>
+
+  $(document).ready(function(){
+    $("#myInput").on("keyup", function() {
+      var value = $(this).val().toLowerCase();
+      $("#myTable tr").filter(function() {
+        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+      });
+    });
+  });
+
+</script>
+
+<script>
+
+
+  function clearCounters(val){
+    document.getElementById(val).value  = 'Clearing...';
+     $.ajax({
+      url: '/routing',
+      type: 'POST',
+      data: {'action': 'clearInt', 'interface': val},
+      success: function(response) {
+      document.getElementById(val).value  = 'Clear Counters';
+          $("#intTable").DataTable().destroy()
+          $('#intTable').html(response.data);
+          $('#intTable').DataTable({"pagingType": "full_numbers"});
+      },
+     });
+    }
+
+ </script>
+
+<script>
+
+  function clearArp(val){
+    document.getElementById('clearArp').value  = 'Clearing...';
+     $.ajax({
+      url: '/routing',
+      type: 'POST',
+      data: {'action': val},
+      success: function(response) {
+      document.getElementById('clearArp').value  = 'Clear Arp';
+          $("#arpTable").DataTable().destroy()
+          $('#arpTable').html(response.data);
+          $('#arpTable').DataTable({"pagingType": "full_numbers"});
+      },
+     });
+    }
+
+ </script>
+
+<script>
+
+  function refreshBgp(val){
+    document.getElementById('bgpRefresh').value  = 'Refreshing...';
+     $.ajax({
+      url: '/routing',
+      type: 'POST',
+      data: {'action': val},
+      success: function(response) {
+      document.getElementById('bgpRefresh').value  = 'Refresh';
+          $("#bgpNeighbors").DataTable().destroy()
+          $('#bgpNeighbors').html(response.data);
+          $('#bgpNeighbors').DataTable({"pagingType": "full_numbers"});
+      },
+     });
+    }
+
+ </script>
+
+<script>
+
+  function refreshOspf(val){
+    document.getElementById('ospfRefresh').value  = 'Refreshing...';
+     $.ajax({
+      url: '/routing',
+      type: 'POST',
+      data: {'action': val},
+      success: function(response) {
+      document.getElementById('ospfRefresh').value  = 'Refresh';
+          $("#ospfTable").DataTable().destroy()
+          $('#ospfTable').html(response.data);
+          $('#ospfTable').DataTable({"pagingType": "full_numbers"});
+      },
+     });
+    }
+
+ </script>
+
+<script>
+
+  function refreshBgpOnly(val){
+    document.getElementById('bgpRefreshOnly').value  = 'Refreshing...';
+     $.ajax({
+      url: '/routing',
+      type: 'POST',
+      data: {'action': val},
+      success: function(response) {
+      document.getElementById('bgpRefresh').value  = 'Refresh';
+          $("#bgpNeighborsOnly").DataTable().destroy()
+          $('#bgpNeighborsOnly').html(response.data);
+          $('#bgpNeighborsOnly').DataTable({"pagingType": "full_numbers"});
+      },
+     });
+    }
+
+ </script>
+
+<script>
+
+  function refreshOspfOnly(val){
+    document.getElementById('ospfRefreshOnly').value  = 'Refreshing...';
+     $.ajax({
+      url: '/routing',
+      type: 'POST',
+      data: {'action': val},
+      success: function(response) {
+      document.getElementById('ospfRefreshOnly').value  = 'Refresh';
+          $("#ospfTableOnly").DataTable().destroy()
+          $('#ospfTableOnly').html(response.data);
+          $('#ospfTableOnly').DataTable({"pagingType": "full_numbers"});
+      },
+     });
+    }
+
+ </script>
+
+<script>
+
+  function addNeighbor(){
+     $.ajax({
+      url: '/add_bgp_neighbor',
+     });
+    }
+
+ </script>
+
+<script>
+
+  function moreIntDetails(val){
+  document.getElementById('getRoutes').value  = 'Getting Details...';
+     $.ajax({
+      url: '/int_details',
+      type: 'POST',
+      data: {'details': val},
+      success: function(response) {
+          var wind_one = window.open("", "popupWindow", "width=700,height=800,scrollbars=yes");
+            wind_one.document.write(response);
+      },
+     });
+    }
+
+ </script>
+
+<script>
+
+  function sourcePing(val){
+     $.ajax({
+      url: '/ping',
+      type: 'POST',
+      data: {'source': val},
+      success: function(response) {
+          var wind = window.open("", "popupWindow", "width=700,height=800,scrollbars=yes");
+            wind.document.write(response);
+      },
+     });
+    }
+
+ </script>
+
+ {% endblock content %}
+
+{% block javascripts %}
+
+
+{% endblock javascripts %}
