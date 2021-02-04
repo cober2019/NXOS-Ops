@@ -9,3 +9,9 @@ NXOS-Ops
         - View trunks
         - View VPcs
         - View Port-Channels
+        
+**Usage**
+---------
+
+     - Clone repo and in your environment run: pip3 install -r requirements.txt
+     - Execute the app using run.py: Double click or from ternal python3 run.py
